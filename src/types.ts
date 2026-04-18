@@ -34,7 +34,7 @@ export interface WorkBlock extends BaseBlock {
 
 export interface ResultItem {
   id: string;
-  type: 'markdown' | 'sql' | 'table' | 'chart' | 'suggested_actions';
+  type: 'markdown' | 'sql' | 'table' | 'chart' | 'suggested_actions' | 'knowledge_graph';
   content: any; // specific per type
 }
 

@@ -4,7 +4,7 @@ import { ExecutionSidePanel } from './components/ExecutionSidePanel';
 import { OmniCommandBar } from './components/OmniCommandBar';
 import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
-import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA } from './constants';
+import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA, MOCK_KG_BLOCKS, MOCK_KG_TRACE } from './constants';
 import { Block, ExecutionTrace, CommandBlock, WorkBlock, ResultBlock } from './types';
 import { Sparkles, BarChart3, Fingerprint, LineChart, FileText, Bot, Database, Filter, Share2, Wand2, Network, Waypoints } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -49,8 +49,8 @@ const INITIAL_SESSIONS: SessionData[] = [
     id: 'session-3',
     title: '构建 CRM_Prod 营销领域关系图谱',
     date: '昨天, 10:12',
-    blocks: [],
-    trace: null
+    blocks: MOCK_KG_BLOCKS,
+    trace: MOCK_KG_TRACE
   },
   {
     id: 'session-4',
@@ -187,72 +187,149 @@ export default function App() {
     setIsSidePanelOpen(true);
     scrollToBottom();
 
-    const initialTrace: ExecutionTrace = {
+    const isGraphTask = command.includes('图谱');
+    const targetTitle = isGraphTask ? '构建 CRM_Prod 营销领域关系图谱' : command;
+
+    const initialTrace: ExecutionTrace = isGraphTask ? {
       taskId: cmdId,
-      taskTitle: command,
+      taskTitle: targetTitle,
       status: 'running',
       startTime: getTime(),
       currentAssignee: 'omi',
-      agentTimeline: [{ agent: '奥米', action: '接收任务并开始拆解网络关系' }],
+      agentTimeline: [{ agent: '奥米', action: '接收图谱生成意图并规划算力' }],
+      toolSteps: []
+    } : {
+      taskId: cmdId,
+      taskTitle: targetTitle,
+      status: 'running',
+      startTime: getTime(),
+      currentAssignee: 'omi',
+      agentTimeline: [{ agent: '奥米', action: '接收任务并开始拆解任务' }],
       toolSteps: []
     };
     updateSessionTrace(currentSessionId, initialTrace);
 
     await new Promise(r => setTimeout(r, 1200));
 
-    newWork.steps[0].status = 'succeeded';
-    newWork.steps.push({ id: 's2', agent: 'data_analyst', agentName: '数据分析专员', name: '底层数据提取与清洗', status: 'running' });
-    newWork.currentAgent = 'data_analyst';
-    newWork.currentAgentName = '数据分析专员';
-    updateSessionBlocks(currentSessionId, [...currentBlocks]);
+    if (isGraphTask) {
+      newWork.steps[0].status = 'succeeded';
+      newWork.steps.push({ id: 's2', agent: 'meta_specialist', agentName: '元数据专员', name: '全域结构拉取', status: 'running' });
+      newWork.currentAgent = 'meta_specialist';
+      newWork.currentAgentName = '元数据专员';
+      updateSessionBlocks(currentSessionId, [...currentBlocks]);
+      
+      initialTrace.agentTimeline.push({ agent: '元数据专员', action: '抽取 CRM 与 Order 域库表信息' });
+      initialTrace.toolSteps.push({
+        id: 'ts-1',
+        name: 'Extract_Metadata',
+        agentName: '元数据专员',
+        status: 'succeeded',
+        duration: '4.2s',
+        input: 'Scan schema: crm_prod, target: marketing',
+        output: 'Extracted 5 core tables, 42 fields.'
+      });
+      updateSessionTrace(currentSessionId, { ...initialTrace });
+      scrollToBottom();
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      newWork.steps[1].status = 'succeeded';
+      newWork.steps.push({ id: 's3', agent: 'kg_specialist', agentName: '图谱专员', name: '血缘关联计算与渲染', status: 'running' });
+      newWork.currentAgent = 'kg_specialist';
+      newWork.currentAgentName = '图谱专员';
+      updateSessionBlocks(currentSessionId, [...currentBlocks]);
+      
+      initialTrace.agentTimeline.push({ agent: '图谱专员', action: '执行节点聚类与血缘链路推断' });
+      initialTrace.toolSteps.push({
+        id: 'ts-2',
+        name: 'Infer_Relations',
+        agentName: '图谱专员',
+        status: 'succeeded',
+        duration: '6.5s',
+        input: 'Analyze primary/foreign keys and lineage paths',
+        output: 'Inferred 5 relationships among 5 entities.'
+      });
+      updateSessionTrace(currentSessionId, { ...initialTrace });
+      scrollToBottom();
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      newWork.steps[2].status = 'succeeded';
+      newWork.status = 'succeeded';
+      currentBlocks = currentBlocks.map(b => b.id === cmdId ? { ...b, status: 'succeeded' } as Block : b);
+      updateSessionBlocks(currentSessionId, [...currentBlocks]);
+
+      initialTrace.status = 'succeeded';
+      initialTrace.agentTimeline.push({ agent: '图谱专员', action: '渲染并输出最终可视化图谱' });
+      updateSessionTrace(currentSessionId, { ...initialTrace });
+
+      const newRes: ResultBlock = {
+        id: resId,
+        type: 'result',
+        timestamp: getTime(),
+        items: [
+          { id: 'r1', type: 'knowledge_graph', content: MOCK_KG_BLOCKS[3]?.items?.[0]?.content || {} },
+          { id: 'r2', type: 'markdown', content: MOCK_KG_BLOCKS[3]?.items?.[1]?.content || '' },
+          { id: 'r3', type: 'suggested_actions', content: ['导出为图谱结构 (JSON)', '修复 Coupon 血缘断层', '对齐营销指标语义口径'] }
+        ]
+      };
+      currentBlocks = [...currentBlocks, newRes];
+    } else {
+      newWork.steps[0].status = 'succeeded';
+      newWork.steps.push({ id: 's2', agent: 'data_analyst', agentName: '数据分析专员', name: '底层数据提取与清洗', status: 'running' });
+      newWork.currentAgent = 'data_analyst';
+      newWork.currentAgentName = '数据分析专员';
+      updateSessionBlocks(currentSessionId, [...currentBlocks]);
+      
+      initialTrace.agentTimeline.push({ agent: '数据分析专员', action: '接管查询权限并连接数据仓库' });
+      initialTrace.toolSteps.push({
+        id: 'ts-1',
+        name: 'Execute_SQL_Query',
+        agentName: '数据分析专员',
+        status: 'succeeded',
+        duration: '1.2s',
+        input: 'Extract data related to user prompt limit 1000...',
+        output: 'Query optimal. 24 rows returned.'
+      });
+      updateSessionTrace(currentSessionId, { ...initialTrace });
+      scrollToBottom();
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      newWork.steps[1].status = 'succeeded';
+      newWork.status = 'succeeded';
+      currentBlocks = currentBlocks.map(b => b.id === cmdId ? { ...b, status: 'succeeded' } as Block : b);
+      updateSessionBlocks(currentSessionId, [...currentBlocks]);
+
+      initialTrace.status = 'succeeded';
+      initialTrace.agentTimeline.push({ agent: '数据分析专员', action: '完成多维模型构建并输出最终产物' });
+      updateSessionTrace(currentSessionId, { ...initialTrace });
+
+      const newRes: ResultBlock = {
+        id: resId,
+        type: 'result',
+        timestamp: getTime(),
+        items: [
+          {
+            id: 'r1',
+            type: 'markdown',
+            content: `任务已处理完成：**${command}**\n\n基于财务分析组最近 30 天的数据样本，我为您生成了相关的数据报告与可视化图表，异常点已为您高亮标注。`
+          },
+          {
+            id: 'r2',
+            type: 'chart',
+            content: MOCK_CHART_DATA.map(d => ({ ...d, sales: d.sales * (0.8 + Math.random() * 0.4) })) 
+          },
+          {
+            id: 'r3',
+            type: 'suggested_actions',
+            content: ['导出 PDF 分析报告', '深入分析异常节点', '将此指标加入每日巡检']
+          }
+        ]
+      };
+      currentBlocks = [...currentBlocks, newRes];
+    }
     
-    initialTrace.agentTimeline.push({ agent: '数据分析专员', action: '接管查询权限并连接数据仓库' });
-    initialTrace.toolSteps.push({
-      id: 'ts-1',
-      name: 'Execute_SQL_Query',
-      agentName: '数据分析专员',
-      status: 'succeeded',
-      duration: '1.2s',
-      input: 'Extract data related to user prompt limit 1000...',
-      output: 'Query optimal. 24 rows returned.'
-    });
-    updateSessionTrace(currentSessionId, { ...initialTrace });
-    scrollToBottom();
-
-    await new Promise(r => setTimeout(r, 1500));
-
-    newWork.steps[1].status = 'succeeded';
-    newWork.status = 'succeeded';
-    currentBlocks = currentBlocks.map(b => b.id === cmdId ? { ...b, status: 'succeeded' } as Block : b);
-    updateSessionBlocks(currentSessionId, [...currentBlocks]);
-
-    initialTrace.status = 'succeeded';
-    initialTrace.agentTimeline.push({ agent: '数据分析专员', action: '完成多维模型构建并输出最终产物' });
-    updateSessionTrace(currentSessionId, { ...initialTrace });
-
-    const newRes: ResultBlock = {
-      id: resId,
-      type: 'result',
-      timestamp: getTime(),
-      items: [
-        {
-          id: 'r1',
-          type: 'markdown',
-          content: `任务已处理完成：**${command}**\n\n基于财务分析组最近 30 天的数据样本，我为您生成了相关的数据报告与可视化图表，异常点已为您高亮标注。`
-        },
-        {
-          id: 'r2',
-          type: 'chart',
-          content: MOCK_CHART_DATA.map(d => ({ ...d, sales: d.sales * (0.8 + Math.random() * 0.4) })) 
-        },
-        {
-          id: 'r3',
-          type: 'suggested_actions',
-          content: ['导出 PDF 分析报告', '深入分析异常节点', '将此指标加入每日巡检']
-        }
-      ]
-    };
-    currentBlocks = [...currentBlocks, newRes];
     updateSessionBlocks(currentSessionId, currentBlocks);
     setActiveBlockId(resId);
     scrollToBottom();

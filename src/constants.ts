@@ -157,3 +157,123 @@ export const MOCK_TRACE: ExecutionTrace = {
     }
   ]
 };
+
+export const MOCK_KG_DATA = {
+  nodes: [
+    { id: '1', label: 'Customer (客户)', group: 'core' },
+    { id: '2', label: 'Order (订单)', group: 'transaction' },
+    { id: '3', label: 'Campaign (活动)', group: 'marketing' },
+    { id: '4', label: 'Product (商品)', group: 'entity' },
+    { id: '5', label: 'Coupon (券卡)', group: 'marketing' },
+  ],
+  links: [
+    { source: '1', target: '2', label: '1:N (下单)' },
+    { source: '1', target: '3', label: 'N:M (参与)' },
+    { source: '2', target: '4', label: '1:N (包含)' },
+    { source: '3', target: '5', label: '1:N (发放)' },
+    { source: '5', target: '2', label: '1:1 (抵扣)' }
+  ]
+};
+
+export const MOCK_KG_MARKDOWN = `
+### CRM_Prod 营销领域关系图谱梳理报告
+
+基于您指定的 \`CRM_Prod\` 及底层的表结构、视图逻辑和计算引擎日志，图谱专员已完成血缘关联与实体抽取。
+
+**发现洞察**：
+1. **核心枢纽**：\`Customer\` 是最具中心性的节点，关联所有交易与营销实体。
+2. **潜在风险**：\`Coupon\` 与 \`Order\` 之间的关联（抵扣逻辑）在跨库血缘中存在断层，建议进一步由语义治理专员对齐口径。
+
+您可以直接在上方查看生成的可视化图谱。
+`;
+
+export const MOCK_KG_BLOCKS: Block[] = [
+  {
+    id: 'cmd-kg-1',
+    type: 'command',
+    timestamp: '10:12:05',
+    title: '构建指令',
+    content: '构建 CRM_Prod 营销领域关系图谱',
+    status: 'succeeded'
+  },
+  {
+    id: 'act-kg-1',
+    type: 'activity',
+    timestamp: '10:12:06',
+    content: '正在接入源端，执行跨表元数据扫描与主外键关系推断...'
+  },
+  {
+    id: 'work-kg-1',
+    type: 'work',
+    timestamp: '10:12:08',
+    currentAgent: 'kg_specialist',
+    currentAgentName: '图谱专员',
+    status: 'succeeded',
+    steps: [
+      { id: 's1', agent: 'omi', agentName: '奥米', name: '意图识别与域划分', status: 'succeeded' },
+      { id: 's2', agent: 'meta_specialist', agentName: '元数据专员', name: '全域结构拉取', status: 'succeeded' },
+      { id: 's3', agent: 'kg_specialist', agentName: '图谱专员', name: '血缘关联计算', status: 'succeeded' },
+      { id: 's4', agent: 'kg_specialist', agentName: '图谱专员', name: '构建并渲染网络', status: 'succeeded' },
+    ]
+  },
+  {
+    id: 'res-kg-1',
+    type: 'result',
+    timestamp: '10:12:20',
+    items: [
+      {
+        id: 'ri-kg-1',
+        type: 'knowledge_graph',
+        content: MOCK_KG_DATA
+      },
+      {
+        id: 'ri-kg-2',
+        type: 'markdown',
+        content: MOCK_KG_MARKDOWN
+      },
+      {
+        id: 'ri-kg-3',
+        type: 'suggested_actions',
+        content: [
+          '导出为图谱结构 (JSON)',
+          '修复 Coupon 血缘断层',
+          '对齐营销指标语义口径'
+        ]
+      }
+    ]
+  }
+];
+
+export const MOCK_KG_TRACE: ExecutionTrace = {
+  taskId: 'cmd-kg-1',
+  taskTitle: '构建 CRM_Prod 营销领域关系图谱',
+  status: 'succeeded',
+  startTime: '10:12:05',
+  currentAssignee: 'System',
+  agentTimeline: [
+    { agent: '奥米', action: '接收图谱生成意图并规划算力' },
+    { agent: '元数据专员', action: '抽取 CRM 与 Order 域库表信息' },
+    { agent: '图谱专员', action: '执行节点聚类与血缘链路推断' },
+    { agent: '图谱专员', action: '渲染并输出最终可视化图谱' },
+  ],
+  toolSteps: [
+    {
+      id: 'ts-kg-1',
+      name: 'Extract_Metadata',
+      agentName: '元数据专员',
+      status: 'succeeded',
+      duration: '4.2s',
+      input: 'Scan schema: crm_prod, target: marketing',
+      output: 'Extracted 5 core tables, 42 fields.'
+    },
+    {
+      id: 'ts-kg-2',
+      name: 'Infer_Relations',
+      agentName: '图谱专员',
+      status: 'succeeded',
+      duration: '6.5s',
+      input: 'Analyze primary/foreign keys and lineage paths',
+      output: 'Inferred 5 relationships among 5 entities.'
+    }
+  ]
+};

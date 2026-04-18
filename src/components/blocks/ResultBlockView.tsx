@@ -3,6 +3,7 @@ import { ResultBlock, ResultItem } from '../../types';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 import { Database, FileLineChart, Table2, Play, Download, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { KnowledgeGraphView } from './KnowledgeGraphView';
 
 export function ResultBlockView({ block, isActive }: { block: ResultBlock; isActive: boolean }) {
   return (
@@ -31,6 +32,8 @@ export function ResultBlockView({ block, isActive }: { block: ResultBlock; isAct
 
 function ResultItemRenderer({ item }: { item: ResultItem }) {
   switch (item.type) {
+    case 'knowledge_graph':
+      return <KnowledgeGraphView data={item.content} />;
     case 'sql':
       return (
         <div className="group rounded-lg border border-slate-200 bg-white overflow-hidden m-2 shadow-sm">
