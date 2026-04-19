@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Filter, Layers, Layout, Settings, History, Plus } from 'lucide-react';
+import { Layout, History, Plus, Info } from 'lucide-react';
 
 interface Props {
   onToggleHistory: () => void;
@@ -14,31 +14,32 @@ export function WorkspaceHeader({ onToggleHistory, onNewTask }: Props) {
           <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center shadow-sm">
             <Layout className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="text-sm font-semibold text-slate-900 leading-tight">ChartWork</h1>
-            <p className="text-[10px] text-slate-500 font-mono tracking-wider">数据治理与知识图谱工作台</p>
-          </div>
+          <span className="text-sm font-semibold text-slate-900 leading-tight">ChartWork</span>
         </div>
 
         <div className="h-4 w-px bg-slate-200" />
 
         <div className="flex items-center space-x-2 text-xs">
-          <span className="flex items-center space-x-1 px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
-            <Layers className="w-3 h-3 text-slate-500" />
-            <span>财务分析组</span>
+          <span className="flex items-center px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
+            财务分析组
           </span>
-          <span className="flex items-center space-x-1 px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
-            <Database className="w-3 h-3 text-slate-500" />
-            <span>order_db</span>
+          <span className="flex items-center px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
+            order_db
           </span>
-          <span className="flex items-center space-x-1 px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
-            <Filter className="w-3 h-3 text-slate-500" />
-            <span>近30天</span>
+          <span className="flex items-center px-2 py-1 bg-slate-50 rounded-md border border-slate-200 text-slate-700 shadow-sm">
+            近30天
+          </span>
+          <span className="flex items-center px-2 py-1 bg-emerald-50 rounded-md border border-emerald-100 text-emerald-700 shadow-sm">
+            已连接 2 个数据源
           </span>
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1">
+        <button className="flex items-center space-x-1 px-3 py-1.5 hover:bg-slate-100 rounded-md text-slate-600 transition-colors text-xs font-medium mr-1">
+          <Info className="w-3.5 h-3.5" />
+          <span>环境详情</span>
+        </button>
         <button 
           onClick={onToggleHistory}
           className="p-2 hover:bg-slate-100 rounded-md text-slate-500 transition-colors tooltip" 
@@ -46,10 +47,7 @@ export function WorkspaceHeader({ onToggleHistory, onNewTask }: Props) {
         >
           <History className="w-4 h-4" />
         </button>
-        <button className="p-2 hover:bg-slate-100 rounded-md text-slate-500 transition-colors" title="工作区设置">
-          <Settings className="w-4 h-4" />
-        </button>
-        <div className="h-4 w-px bg-slate-200 mx-1" />
+        <div className="h-4 w-px bg-slate-200 mx-2" />
         <button 
           onClick={onNewTask}
           className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium transition-colors shadow-sm"

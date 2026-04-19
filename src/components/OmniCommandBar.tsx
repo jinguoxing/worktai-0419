@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from 'motion/react';
 interface Props {
   onSubmit: (command: string) => void;
   disabled?: boolean;
+  hidden?: boolean;
 }
 
-export function OmniCommandBar({ onSubmit, disabled }: Props) {
+export function OmniCommandBar({ onSubmit, disabled, hidden }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const [value, setValue] = useState('');
+
+  if (hidden) return null;
 
   const showSuggestions = isFocused && value.length === 0 && !disabled;
 
