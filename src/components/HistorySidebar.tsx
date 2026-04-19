@@ -41,7 +41,7 @@ export function HistorySidebar({ isOpen, onClose, sessions, currentSessionId, on
             <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 shrink-0 bg-slate-50/50">
               <div className="flex items-center space-x-2 text-slate-800">
                 <History className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-semibold">历史记录</span>
+                <span className="text-sm font-semibold">任务记录</span>
               </div>
               <button 
                 onClick={onClose}

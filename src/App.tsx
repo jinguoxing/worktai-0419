@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { WorkspaceHeader } from './components/WorkspaceHeader';
 import { ExecutionSidePanel } from './components/ExecutionSidePanel';
-import { OmniCommandBar } from './components/OmniCommandBar';
+import { TaskComposer } from './components/TaskComposer';
+import { EnvironmentDrawer } from './components/EnvironmentDrawer';
+import { WorkspaceContextState, ExecMode } from './types';
 import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
 import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA, MOCK_KG_BLOCKS, MOCK_KG_TRACE } from './constants';
 import { Block, ExecutionTrace, CommandBlock, WorkBlock, ResultBlock } from './types';
 import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
 const getTime = () => {
@@ -77,15 +79,13 @@ export default function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isEnvironmentDrawerOpen, setIsEnvironmentDrawerOpen] = useState(false);
 
-  const [welcomeInput, setWelcomeInput] = useState('');
-  const [execMode, setExecMode] = useState('auto');
-  
-  const handleWelcomeSubmit = () => {
-    if (welcomeInput.trim()) {
-      handleSubmitCommand(welcomeInput.trim());
-      setWelcomeInput('');
-    }
+  const contextState: WorkspaceContextState = {
+    workspaceName: 'ChartWork',
+    group: { id: 'g01', name: '财务分析组' },
+    dataSource: { id: 'db01', name: 'order_db', connectedCount: 2 },
+    timeRange: '近30天'
   };
 
   const RECENT_TASKS = [
@@ -150,8 +150,8 @@ export default function App() {
     setIsSidePanelOpen(false);
   };
 
-  const handleSubmitCommand = async (command: string) => {
-    if (!command.trim() || isSimulating) return;
+  const handleSubmitCommand = async (command: string, mode: ExecMode = 'auto', files: File[] = []) => {
+    if ((!command.trim() && files.length === 0) || isSimulating) return;
 
     setIsSimulating(true);
 
@@ -166,8 +166,9 @@ export default function App() {
       type: 'command',
       timestamp: tstamp,
       title: '用户指令',
-      content: command,
-      status: 'running'
+      content: command || '上传了参考附件',
+      status: 'running',
+      attachments: files.length > 0 ? files.map(f => ({ name: f.name, size: f.size })) : undefined
     };
     currentBlocks.push(newCmd);
     updateSessionBlocks(currentSessionId, currentBlocks);
@@ -187,6 +188,80 @@ export default function App() {
 
     await new Promise(r => setTimeout(r, 800));
 
+    // MODE: Suggest
+    if (mode === 'suggest') {
+      const suggestWork: WorkBlock = {
+        id: workId, type: 'work', timestamp: getTime(), currentAgent: 'omi', currentAgentName: '奥米', status: 'running',
+        steps: [{ id: 's1', agent: 'omi', agentName: '奥米', name: '需求理解与建议草案生成', status: 'running' }]
+      };
+      currentBlocks = [...currentBlocks, suggestWork];
+      updateSessionBlocks(currentSessionId, currentBlocks);
+      const trace: ExecutionTrace = { taskId: cmdId, taskTitle: '生成执行建议', status: 'running', startTime: getTime(), currentAssignee: 'omi', agentTimeline: [{ agent: '奥米', action: '快速出具排查建议' }], toolSteps: [] };
+      updateSessionTrace(currentSessionId, trace);
+      
+      await new Promise(r => setTimeout(r, 1000));
+      suggestWork.steps[0].status = 'succeeded';
+      suggestWork.status = 'succeeded';
+      trace.status = 'succeeded';
+      
+      const newRes: ResultBlock = {
+        id: resId, type: 'result', timestamp: getTime(),
+        items: [
+          {
+            id: 'r1', type: 'markdown',
+            content: `针对您的问题：**${command}**\n\n系统目前提供了**仅供参考的排查建议**，不执行真实工具调用。您可以参考以下思路：\n\n1. **核实数据源状态：** 检查 order_db 是否有凌晨积压延迟。\n2. **检查底层模型：** 请数据开发审查 \`dim_user\` 与 \`fact_order\` 的关联键变更。\n3. **建议行动**：如果需要深入，请切换至 [自动执行] 模式重新发送此指令。`
+          },
+          { id: 'r2', type: 'suggested_actions', content: ['采用自动执行模式重试', '查看相关报表', '创建值班工单'] }
+        ]
+      };
+      currentBlocks = currentBlocks.map(b => b.id === cmdId ? { ...b, status: 'succeeded' } as Block : b);
+      currentBlocks.push(newRes);
+      updateSessionBlocks(currentSessionId, currentBlocks);
+      updateSessionTrace(currentSessionId, trace);
+      setActiveBlockId(resId);
+      setIsSimulating(false);
+      scrollToBottom();
+      return;
+    }
+
+    // MODE: Expert (Wait for user)
+    if (mode === 'expert') {
+      const expertWork: WorkBlock = {
+        id: workId, type: 'work', timestamp: getTime(), currentAgent: 'omi', currentAgentName: '奥米', status: 'running',
+        steps: [{ id: 's1', agent: 'omi', agentName: '奥米', name: '全链路执行计划编制', status: 'running' }]
+      };
+      currentBlocks = [...currentBlocks, expertWork];
+      updateSessionBlocks(currentSessionId, currentBlocks);
+      const trace: ExecutionTrace = { taskId: cmdId, taskTitle: '专家协作模式：等待前置确认', status: 'running', startTime: getTime(), currentAssignee: 'omi', agentTimeline: [{ agent: '奥米', action: '编制多维排查计划...' }], toolSteps: [] };
+      updateSessionTrace(currentSessionId, trace);
+      
+      await new Promise(r => setTimeout(r, 1200));
+      expertWork.steps[0].status = 'succeeded';
+      expertWork.status = 'waiting_user';
+      trace.status = 'waiting_user';
+      trace.agentTimeline.push({ agent: '奥米', action: '暂停执行，等待主理人确认核查计划' });
+      
+      const newRes: ResultBlock = {
+        id: resId, type: 'result', timestamp: getTime(),
+        items: [
+          {
+            id: 'r1', type: 'markdown',
+            content: `**[专家模式] 已生成多步执行规划：**\n\n1. **元数据专员** 先行扫描 \`order_db\` 业务域的最新 schema。\n2. **数据分析专员** 取最近三周环比基准对问题节点进行方差分析。\n3. （可选增强）由 **质量专员** 对空值进行规则拦截验证。\n\n请确认计划无误后，我将指挥各智能体开始运行上述管道。`
+          },
+          { id: 'r2', type: 'suggested_actions', content: ['✅ 批准并运行此计划', '✏️ 修改部分步骤', '❌ 取消当前分析'] }
+        ]
+      };
+      currentBlocks = currentBlocks.map(b => b.id === cmdId ? { ...b, status: 'waiting_user' } as Block : b);
+      currentBlocks.push(newRes);
+      updateSessionBlocks(currentSessionId, currentBlocks);
+      updateSessionTrace(currentSessionId, trace);
+      setActiveBlockId(resId);
+      setIsSimulating(false);
+      scrollToBottom();
+      return;
+    }
+
+    // MODE: Auto (Default Execution)
     const newWork: WorkBlock = {
       id: workId,
       type: 'work',
@@ -359,8 +434,10 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-blue-200">
       <WorkspaceHeader 
+        contextState={contextState}
         onToggleHistory={() => setIsHistoryOpen(!isHistoryOpen)} 
         onNewTask={handleNewTask}
+        onToggleEnvironment={() => setIsEnvironmentDrawerOpen(true)}
       />
       
       <HistorySidebar 
@@ -374,9 +451,16 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44 scroll-smooth bg-slate-50/50">
-          {currentSession.blocks.length === 0 ? (
-            <div className="min-h-full flex flex-col items-center pt-16 lg:pt-24 px-6 lg:px-12 w-full max-w-5xl mx-auto relative overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-blue-100/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+          <AnimatePresence mode="wait">
+            {currentSession.blocks.length === 0 ? (
+              <motion.div 
+                key="hero-entry"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
+                className="min-h-full flex flex-col items-center pt-16 lg:pt-24 px-6 lg:px-12 w-full max-w-5xl mx-auto relative overflow-hidden"
+              >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-slate-100/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
               {/* 1. Hero */}
               <motion.div 
@@ -390,47 +474,9 @@ export default function App() {
               {/* 2. Main Input Box */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-                className="w-full max-w-[800px] mb-12"
+                className="w-full flex justify-center"
               >
-                <div className="bg-white border border-slate-200 shadow-xl shadow-slate-200/40 rounded-2xl overflow-hidden focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all flex flex-col relative z-20">
-                  <div className="flex p-4 pb-2">
-                    <textarea 
-                      value={welcomeInput}
-                      onChange={e => setWelcomeInput(e.target.value)}
-                      onKeyDown={e => {
-                        if(e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleWelcomeSubmit();
-                        }
-                      }}
-                      placeholder="请输入你的分析目标、业务问题或待诊断异常...&#10;例如：对齐“实收金额”指标口径，并指出冲突来源"
-                      className="flex-1 bg-transparent border-0 text-[15px] text-slate-900 placeholder:text-slate-400 resize-none focus:ring-0 min-h-[80px] m-0 leading-relaxed font-sans outline-none"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3 bg-slate-50/50 border-t border-slate-100 flex-wrap gap-3">
-                    <div className="flex items-center bg-slate-100/80 p-1 rounded-lg">
-                      <button onClick={() => setExecMode('auto')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", execMode === 'auto' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>自动执行</button>
-                      <button onClick={() => setExecMode('expert')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", execMode === 'expert' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>专家协作</button>
-                      <button onClick={() => setExecMode('suggest')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", execMode === 'suggest' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>仅给建议</button>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors tooltip hover:bg-slate-100 rounded-lg" title="上传附件">
-                        <Paperclip className="w-5 h-5 -rotate-45" />
-                      </button>
-                      <button 
-                        onClick={handleWelcomeSubmit} 
-                        disabled={!welcomeInput.trim()} 
-                        className={cn(
-                          "flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all shadow-sm", 
-                          welcomeInput.trim() ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-200 text-slate-400"
-                        )}
-                      >
-                        <span>发送</span>
-                        <ArrowUp className="w-4 h-4 ml-1.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <TaskComposer layout="hero" onSubmit={handleSubmitCommand} disabled={isSimulating} />
               </motion.div>
 
               {/* 3. Grid for Templates logic and Recent Tasks */}
@@ -443,49 +489,53 @@ export default function App() {
                   <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center">
                     推荐任务模板
                   </h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    {[
-                      { title: "生成业务知识图谱", desc: "盘点实体、关系与关键业务链路", icon: <Share2 className="w-4 h-4 text-indigo-500" /> },
-                      { title: "对齐核心指标口径", desc: "识别定义冲突与口径差异来源", icon: <Wand2 className="w-4 h-4 text-amber-500" /> },
-                      { title: "诊断异常波动原因", desc: "定位关键波动因子与异常归因", icon: <LineChart className="w-4 h-4 text-emerald-500" /> },
-                      { title: "更多模板", desc: "从业务场景库中选择", icon: <LayoutDashboard className="w-4 h-4 text-blue-500" />, isMore: true }
-                    ].map((t, i) => (
-                      <button 
-                        key={i} 
-                        onClick={() => !t.isMore && setWelcomeInput(t.title)} 
-                        className={cn(
-                          "p-4 rounded-xl border transition-all text-left flex flex-col", 
-                          t.isMore ? "bg-slate-50 border-slate-200 border-dashed hover:border-blue-400 hover:bg-blue-50/50 items-center justify-center text-center h-full" : "bg-white border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 group"
-                        )}
-                      >
-                        <div className={cn("mb-3 p-1.5 rounded-lg w-fit transition-colors shrink-0", t.isMore ? "bg-white border border-slate-200 shadow-sm" : "bg-slate-50 group-hover:bg-blue-50 group-hover:text-blue-600")}>
-                          {t.icon}
-                        </div>
-                        <div className={cn("text-[13px] font-semibold text-slate-800 mb-1 leading-tight", t.isMore && "text-slate-600")}>{t.title}</div>
-                        {!t.isMore && <div className="text-[11px] text-slate-500 leading-snug">{t.desc}</div>}
-                      </button>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[
+                    { title: "生成业务知识图谱", desc: "盘点实体、关系与核心链路", icon: <Share2 className="w-4 h-4 text-indigo-500" /> },
+                    { title: "对齐核心指标口径", desc: "识别定义冲突与数据口径差异", icon: <Wand2 className="w-4 h-4 text-amber-500" /> },
+                    { title: "诊断异常波动原因", desc: "定位关键波动因子与异常归因", icon: <LineChart className="w-4 h-4 text-emerald-500" /> },
+                    { title: "更多业务模板", desc: "从团队场景库中选择", icon: <LayoutDashboard className="w-4 h-4 text-blue-500" />, isMore: true }
+                  ].map((t, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => {
+                        if (!t.isMore) {
+                          handleSubmitCommand(t.title);
+                        }
+                      }} 
+                      className={cn(
+                        "p-4 rounded-xl border transition-all text-left flex flex-col hover:border-blue-300", 
+                        t.isMore ? "bg-slate-50 border-slate-200 border-dashed hover:bg-slate-100 items-center justify-center text-center h-full" : "bg-white border-slate-200 hover:shadow-sm group hover:-translate-y-px"
+                      )}
+                    >
+                      <div className={cn("mb-3 p-1.5 rounded-lg w-fit transition-colors shrink-0", t.isMore ? "bg-white border border-slate-200 shadow-sm" : "bg-slate-50 group-hover:bg-blue-50/50")}>
+                        {t.icon}
+                      </div>
+                      <div className={cn("text-[13px] font-semibold text-slate-800 mb-1 leading-tight", t.isMore && "text-slate-600")}>{t.title}</div>
+                      {!t.isMore && <div className="text-[11px] text-slate-500 leading-snug">{t.desc}</div>}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Recent Tasks */}
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center">
-                    继续最近任务
-                  </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                    {RECENT_TASKS.map((t, i) => (
-                      <button 
-                        key={i} 
-                        onClick={() => {
-                           const session = sessions.find(s => s.title.includes(t.title.substring(0,4)));
-                           if(session) {
-                             setCurrentSessionId(session.id);
-                           }
-                        }} 
-                        className="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-400 hover:shadow-md transition-all text-left flex flex-col group hover:-translate-y-0.5"
-                      >
-                        <div className="text-[13px] font-semibold text-slate-800 mb-2 truncate group-hover:text-blue-700 transition-colors">{t.title}</div>
+              {/* Recent Tasks */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center">
+                  继续最近任务
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  {RECENT_TASKS.map((t, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => {
+                         const session = sessions.find(s => s.title.includes(t.title.substring(0,4)));
+                         if(session) {
+                           setCurrentSessionId(session.id);
+                         }
+                      }} 
+                      className="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-all text-left flex flex-col group hover:-translate-y-px"
+                    >
+                      <div className="text-[13px] font-semibold text-slate-800 mb-2 truncate group-hover:text-blue-600 transition-colors">{t.title}</div>
                         <div className="flex items-center space-x-2 text-[10px] mb-2.5">
                           <span className={cn("px-1.5 py-0.5 rounded-md font-bold shadow-sm border", t.statusColor)}>{t.statusText}</span>
                           <span className="text-slate-400 font-medium">· {t.time}</span>
@@ -496,14 +546,22 @@ export default function App() {
                   </div>
                 </div>
               </motion.div>
-            </div>
-          ) : (
-            <BlockStream 
-              blocks={currentSession.blocks} 
-              onBlockClick={handleBlockClick} 
-              activeBlockId={activeBlockId} 
-            />
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="execution-stream"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full min-h-full"
+              >
+                <BlockStream 
+                  blocks={currentSession.blocks} 
+                  onBlockClick={handleBlockClick} 
+                  activeBlockId={activeBlockId} 
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         
         <ExecutionSidePanel 
@@ -512,12 +570,20 @@ export default function App() {
           onClose={() => setIsSidePanelOpen(false)} 
         />
         
-        <OmniCommandBar 
-          onSubmit={handleSubmitCommand} 
-          disabled={isSimulating} 
-          hidden={currentSession.blocks.length === 0} 
-        />
+        {currentSession.blocks.length > 0 && (
+          <TaskComposer 
+            layout="dock" 
+            onSubmit={handleSubmitCommand} 
+            disabled={isSimulating} 
+          />
+        )}
       </div>
+
+      <EnvironmentDrawer 
+        isOpen={isEnvironmentDrawerOpen}
+        onClose={() => setIsEnvironmentDrawerOpen(false)}
+        contextState={contextState}
+      />
     </div>
   );
 }

@@ -2,6 +2,38 @@ export type AgentType = 'omi' | 'data_analyst' | 'metadata_expert' | 'quality_ex
 
 export type BlockState = 'idle' | 'submitted' | 'understanding' | 'routing' | 'running' | 'waiting_user' | 'rendering_result' | 'succeeded' | 'failed' | 'cancelled';
 
+export type TaskStatus = 'draft' | 'running' | 'waiting_confirm' | 'succeeded' | 'failed';
+
+export type ExecMode = 'auto' | 'expert' | 'suggest';
+
+export interface WorkspaceContextState {
+  workspaceName: string;
+  group: { id: string; name: string };
+  dataSource: { id: string; name: string; connectedCount: number };
+  timeRange: string;
+  permissions?: string[];
+  availableAgents?: string[];
+}
+
+export interface WorkspaceTask {
+  id: string;
+  title: string;
+  summary?: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+  context: {
+    groupId: string;
+    dataSourceId: string;
+    timeRange: string;
+    mode: ExecMode;
+  };
+  session: {
+    blocks: Block[];
+    trace: ExecutionTrace | null;
+  };
+}
+
 export interface BaseBlock {
   id: string;
   type: 'command' | 'work' | 'result' | 'activity';
@@ -13,6 +45,7 @@ export interface CommandBlock extends BaseBlock {
   title: string;
   content: string;
   status: 'submitted' | 'running' | 'waiting_user' | 'succeeded';
+  attachments?: { name: string; size: number }[];
 }
 
 export interface WorkStep {
