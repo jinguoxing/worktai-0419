@@ -65,7 +65,36 @@ export function HistorySidebar({ isOpen, onClose, sessions, currentSessionId, on
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2 mt-2">近期任务</div>
+              {/* Added active Recent Tasks */}
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2 mt-2">继续处理</div>
+              <button className="w-full flex flex-col text-left px-3 py-2.5 rounded-lg transition-all text-slate-700 hover:bg-slate-50 border border-transparent hover:border-slate-200 group relative overflow-hidden mb-4">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 rounded-l-lg"></div>
+                <div className="flex items-center space-x-2 mb-1 pl-1">
+                  <span className="text-[12px] font-semibold truncate group-hover:text-amber-600 transition-colors">财务指标口径清洗</span>
+                </div>
+                <div className="text-[10px] pl-1 text-slate-500 mb-1">
+                  发现 3 处口径冲突，待选择标准定义
+                </div>
+                <div className="text-[9px] pl-1 text-slate-400">
+                  2 小时前 · 待确认
+                </div>
+              </button>
+              <button className="w-full flex flex-col text-left px-3 py-2.5 rounded-lg transition-all text-slate-700 hover:bg-slate-50 border border-transparent hover:border-slate-200 group relative overflow-hidden mb-6">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-l-lg"></div>
+                <div className="flex items-center space-x-2 mb-1 pl-1">
+                  <span className="text-[12px] font-semibold truncate group-hover:text-blue-600 transition-colors">昨日订单异常归因</span>
+                </div>
+                <div className="text-[10px] pl-1 text-slate-500 mb-1">
+                  已完成波动因子识别，等待确认口径范围
+                </div>
+                <div className="text-[9px] pl-1 text-slate-400">
+                  10 分钟前 · 进行中
+                </div>
+              </button>
+
+              <div className="h-px bg-slate-100 my-4 mx-2"></div>
+
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">近期任务</div>
               {sessions.map(session => (
                 <button
                   key={session.id}

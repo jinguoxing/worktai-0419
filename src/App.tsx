@@ -3,6 +3,7 @@ import { WorkspaceHeader } from './components/WorkspaceHeader';
 import { ExecutionSidePanel } from './components/ExecutionSidePanel';
 import { TaskComposer } from './components/TaskComposer';
 import { EnvironmentDrawer } from './components/EnvironmentDrawer';
+import { InboxSidebar } from './components/InboxSidebar';
 import { WorkspaceContextState, ExecMode } from './types';
 import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
@@ -78,6 +79,7 @@ export default function App() {
   
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [isEnvironmentDrawerOpen, setIsEnvironmentDrawerOpen] = useState(false);
 
@@ -87,12 +89,6 @@ export default function App() {
     dataSource: { id: 'db01', name: 'order_db', connectedCount: 2 },
     timeRange: '近30天'
   };
-
-  const RECENT_TASKS = [
-    { title: '昨日订单异常归因', statusText: '进行中', statusColor: 'bg-blue-50 text-blue-600 border-blue-200', time: '10 分钟前更新', summary: '已完成波动因子识别，等待确认口径范围' },
-    { title: '财务指标口径清洗', statusText: '待确认', statusColor: 'bg-amber-50 text-amber-600 border-amber-200', time: '2 小时前更新', summary: '发现 3 处口径冲突，待选择标准定义' },
-    { title: '核心域质量扫描', statusText: '已完成', statusColor: 'bg-emerald-50 text-emerald-600 border-emerald-200', time: '昨日', summary: '识别 5 个高风险字段，已生成诊断报告' }
-  ];
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -436,6 +432,7 @@ export default function App() {
       <WorkspaceHeader 
         contextState={contextState}
         onToggleHistory={() => setIsHistoryOpen(!isHistoryOpen)} 
+        onToggleInbox={() => setIsInboxOpen(!isInboxOpen)}
         onNewTask={handleNewTask}
         onToggleEnvironment={() => setIsEnvironmentDrawerOpen(true)}
       />
@@ -449,6 +446,11 @@ export default function App() {
         onNewTask={handleNewTask}
       />
 
+      <InboxSidebar 
+        isOpen={isInboxOpen}
+        onClose={() => setIsInboxOpen(false)}
+      />
+
       <div className="flex-1 flex overflow-hidden relative">
         <div ref={scrollRef} className="flex-1 overflow-y-auto pb-44 scroll-smooth bg-slate-50/50">
           <AnimatePresence mode="wait">
@@ -458,16 +460,49 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                className="min-h-full flex flex-col items-center pt-16 lg:pt-24 px-6 lg:px-12 w-full max-w-7xl mx-auto relative overflow-hidden"
+                className="min-h-full w-full relative group"
               >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-slate-100/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+                {/* Professional AI Background System */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none select-none -z-10 bg-slate-50/30">
+                  {/* High-Tech Data Network Image */}
+                  <div className="absolute top-0 left-0 w-full h-[700px] opacity-[0.4] mix-blend-luminosity">
+                    <img 
+                      src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&q=80&w=2800" 
+                      alt="Data Network" 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover grayscale opacity-40 brightness-110"
+                      style={{
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, rgba(0,0,0,0.1) 60%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, black 0%, rgba(0,0,0,0.1) 60%, transparent 100%)'
+                      }}
+                    />
+                  </div>
+
+                  {/* Subtle Dotted Grid */}
+                  <div 
+                    className="absolute inset-0 opacity-[0.4]" 
+                    style={{ 
+                      backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', 
+                      backgroundSize: '24px 24px', 
+                      WebkitMaskImage: 'radial-gradient(ellipse at center top, black 50%, transparent 80%)',
+                      maskImage: 'radial-gradient(ellipse at center top, black 50%, transparent 80%)' 
+                    }}
+                  />
+                  {/* Abstract Mesh Gradients */}
+                  <div className="absolute -top-[10%] -left-[5%] w-[50%] h-[600px] rounded-full bg-blue-500/10 blur-[120px]" />
+                  <div className="absolute -top-[5%] -right-[5%] w-[40%] h-[500px] rounded-full bg-indigo-500/10 blur-[100px]" />
+                  <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[60%] h-[400px] rounded-full bg-sky-400/5 blur-[120px]" />
+                </div>
+
+                {/* Content Container */}
+                <div className="flex flex-col items-center pt-16 lg:pt-28 px-6 lg:px-12 w-full max-w-7xl mx-auto relative z-10">
 
               {/* 1. Hero */}
               <motion.div 
                 initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}
                 className="text-center mb-10 w-full"
               >
-                <h2 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">你想完成什么分析任务？</h2>
+                <h2 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">你想完成什么任务？</h2>
                 <p className="text-[15px] text-slate-500">告诉我目标，我会结合当前数据环境自动拆解并执行</p>
               </motion.div>
 
@@ -479,7 +514,7 @@ export default function App() {
                 <TaskComposer layout="hero" onSubmit={handleSubmitCommand} disabled={isSimulating} />
               </motion.div>
 
-              {/* 3. Grid for Templates, Pending, and Recent Tasks */}
+              {/* 3. Grid for Templates */}
               <motion.div 
                 initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                 className="w-full max-w-[1000px] flex flex-col gap-10 pb-20 z-10"
@@ -518,76 +553,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Pending Tasks (System Generated To-Dos) */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-slate-900 flex items-center">
-                    待处理系统任务
-                  </h3>
-                  <div className="flex space-x-2">
-                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium border border-red-200">1 阻塞项</span>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium border border-slate-200">3 待确认</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {[
-                    { title: "线上发布被拦截", summary: "检测到 fact_order_detail 模型有 3 个未定义的新维度，导致下游视图发布阻塞。", action: "前往治理页修复", tone: "red" },
-                    { title: "命名域存在冲突疑似点", summary: "“总收入”指标在财务中心和运营中心存在两套计算口径，需要确认保留版本。", action: "启动口径对齐指令", tone: "amber" },
-                    { title: "异常波动诊断报告完成", summary: "昨日大促期间产生异常转化率跌幅，分析报告及初步归因已生成，请查阅。", action: "查看诊断结果", tone: "slate" },
-                  ].map((t, i) => (
-                    <div key={i} className={cn(
-                      "bg-white border rounded-xl p-4 flex flex-col justify-between transition-colors shadow-sm cursor-pointer",
-                      t.tone === 'red' ? "border-red-200 hover:border-red-300" :
-                      t.tone === 'amber' ? "border-amber-200 hover:border-amber-300" : "border-slate-200 hover:border-slate-300"
-                    )}>
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[13px] font-bold text-slate-800">{t.title}</span>
-                          {t.tone === 'red' && <AlertCircle className="w-4 h-4 text-red-500" />}
-                          {t.tone === 'amber' && <AlertCircle className="w-4 h-4 text-amber-500" />}
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-snug mb-3">{t.summary}</p>
-                      </div>
-                      <button className={cn(
-                        "self-start text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors border",
-                        t.tone === 'red' ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-100" : 
-                        t.tone === 'amber' ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100" : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100"
-                      )}>
-                        {t.action}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Tasks */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center">
-                  继续最近任务
-                </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                  {RECENT_TASKS.map((t, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => {
-                         const session = sessions.find(s => s.title.includes(t.title.substring(0,4)));
-                         if(session) {
-                           setCurrentSessionId(session.id);
-                         }
-                      }} 
-                      className="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-all text-left flex flex-col group hover:-translate-y-px"
-                    >
-                      <div className="text-[13px] font-semibold text-slate-800 mb-2 truncate group-hover:text-blue-600 transition-colors">{t.title}</div>
-                        <div className="flex items-center space-x-2 text-[10px] mb-2.5">
-                          <span className={cn("px-1.5 py-0.5 rounded-md font-bold shadow-sm border", t.statusColor)}>{t.statusText}</span>
-                          <span className="text-slate-400 font-medium">· {t.time}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 leading-snug line-clamp-2">{t.summary}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </motion.div>
+              </div> {/* Close Content Container */}
               </motion.div>
             ) : (
               <motion.div

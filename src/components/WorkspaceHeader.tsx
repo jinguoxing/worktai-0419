@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, History, Plus, Info } from 'lucide-react';
+import { Layout, History, Plus, Info, Bell } from 'lucide-react';
 import { WorkspaceContextState } from '../types';
 
 interface Props {
@@ -7,9 +7,10 @@ interface Props {
   onToggleHistory: () => void;
   onNewTask: () => void;
   onToggleEnvironment: () => void;
+  onToggleInbox?: () => void;
 }
 
-export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onToggleEnvironment }: Props) {
+export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onToggleEnvironment, onToggleInbox }: Props) {
   return (
     <header className="h-14 border-b border-slate-200 bg-white/80 backdrop-blur flex items-center justify-between px-4 sticky top-0 z-20 shrink-0">
       <div className="flex items-center space-x-6">
@@ -45,6 +46,14 @@ export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onTo
         >
           <Info className="w-3.5 h-3.5" />
           <span>环境详情</span>
+        </button>
+        <button 
+          onClick={onToggleInbox}
+          className="p-2 hover:bg-slate-100 rounded-md text-slate-500 transition-colors tooltip relative mr-1" 
+          title="系统待办"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>
         </button>
         <button 
           onClick={onToggleHistory}
