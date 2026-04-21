@@ -57,6 +57,24 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
     );
   };
 
+  const MODE_CONFIG = {
+    auto: {
+      title: '自动执行', sub: '直接帮我做',
+      placeholder: '请输入你要直接执行的任务，例如：分析昨日订单异常并给出归因',
+      btn: '开始执行', tip: '本次将自动拆解任务并调度数字员工执行'
+    },
+    expert: {
+      title: '专家协作', sub: '出计划等确认',
+      placeholder: '请输入复杂任务目标，例如：先给我一版指标治理执行计划',
+      btn: '生成计划', tip: '本次将先生成执行计划，等待你确认后再运行'
+    },
+    suggest: {
+      title: '仅给建议', sub: '给思路不运行',
+      placeholder: '请输入你想先咨询的问题，例如：这个异常排查应该从哪里开始',
+      btn: '获取建议', tip: '本次仅输出建议，不会调用真实工具'
+    }
+  };
+
   if (layout === 'dock') {
     return (
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[800px] px-4 z-20">
@@ -128,8 +146,30 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
   }
 
   // Hero layout
+  const config = MODE_CONFIG[mode];
   return (
-    <div className="w-full max-w-[800px] mb-12 relative z-20">
+    <div className="w-full max-w-[800px] mb-12 relative z-20 flex flex-col space-y-4">
+      <div className="flex gap-3 w-full">
+        {(Object.keys(MODE_CONFIG) as ExecMode[]).map((k) => {
+          const v = MODE_CONFIG[k];
+          return (
+            <button 
+              key={k}
+              onClick={() => setMode(k)}
+              className={cn(
+                "p-3 rounded-xl flex-1 text-left transition-all border flex flex-col",
+                mode === k 
+                  ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-500/20 shadow-sm" 
+                  : "border-slate-200 hover:border-blue-300 bg-white"
+              )}
+            >
+              <div className="font-semibold text-[13px] text-slate-800 tracking-wide">{v.title}</div>
+              <div className="text-[11px] text-slate-500 mt-1">{v.sub}</div>
+            </button>
+          )
+        })}
+      </div>
+
       <motion.div 
         layoutId="composer-box"
         className={cn(
@@ -148,16 +188,15 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
                 handleSubmit();
               }
             }}
-            placeholder="请输入你的分析目标、业务问题或待诊断异常...&#10;例如：对齐“实收金额”指标口径，并指出冲突来源"
-            className="flex-1 bg-transparent border-0 text-[15px] text-slate-900 placeholder:text-slate-400 resize-none focus:ring-0 min-h-[80px] m-0 leading-relaxed font-sans outline-none"
+            placeholder={config.placeholder}
+            className="flex-1 bg-transparent border-0 text-[15px] text-slate-900 placeholder:text-slate-400 resize-none focus:ring-0 min-h-[80px] m-0 leading-relaxed font-sans outline-none disabled:bg-transparent"
             disabled={disabled}
           />
         </div>
         <div className="flex items-center justify-between px-4 py-3 bg-slate-50/50 border-t border-slate-100 flex-wrap gap-3">
-          <div className="flex items-center bg-slate-100/80 p-1 rounded-lg">
-            <button onClick={() => setMode('auto')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", mode === 'auto' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>自动执行</button>
-            <button onClick={() => setMode('expert')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", mode === 'expert' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>专家协作</button>
-            <button onClick={() => setMode('suggest')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", mode === 'suggest' ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>仅给建议</button>
+          <div className="text-[11px] text-slate-500 flex items-center">
+             <Sparkles className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
+             {config.tip}
           </div>
           <div className="flex items-center space-x-2">
             <input 
@@ -178,12 +217,12 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
               onClick={handleSubmit} 
               disabled={!hasContent || disabled} 
               className={cn(
-                "flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all shadow-sm", 
+                "flex items-center px-4 py-2 text-[13px] font-semibold rounded-xl transition-all shadow-sm", 
                 hasContent ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-200 text-slate-400"
               )}
             >
-              <span>发送</span>
-              <ArrowUp className="w-4 h-4 ml-1.5" />
+              <span>{disabled ? "正在启动..." : config.btn}</span>
+              {!disabled && <ArrowUp className="w-4 h-4 ml-1.5" />}
             </button>
           </div>
         </div>

@@ -8,7 +8,7 @@ import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
 import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA, MOCK_KG_BLOCKS, MOCK_KG_TRACE } from './constants';
 import { Block, ExecutionTrace, CommandBlock, WorkBlock, ResultBlock } from './types';
-import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard } from 'lucide-react';
+import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -458,7 +458,7 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                className="min-h-full flex flex-col items-center pt-16 lg:pt-24 px-6 lg:px-12 w-full max-w-5xl mx-auto relative overflow-hidden"
+                className="min-h-full flex flex-col items-center pt-16 lg:pt-24 px-6 lg:px-12 w-full max-w-7xl mx-auto relative overflow-hidden"
               >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-slate-100/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
@@ -479,10 +479,10 @@ export default function App() {
                 <TaskComposer layout="hero" onSubmit={handleSubmitCommand} disabled={isSimulating} />
               </motion.div>
 
-              {/* 3. Grid for Templates logic and Recent Tasks */}
+              {/* 3. Grid for Templates, Pending, and Recent Tasks */}
               <motion.div 
                 initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-                className="w-full max-w-[800px] flex flex-col gap-10 pb-20 z-10"
+                className="w-full max-w-[1000px] flex flex-col gap-10 pb-20 z-10"
               >
                 {/* Recommended Templates */}
                 <div>
@@ -514,6 +514,48 @@ export default function App() {
                       <div className={cn("text-[13px] font-semibold text-slate-800 mb-1 leading-tight", t.isMore && "text-slate-600")}>{t.title}</div>
                       {!t.isMore && <div className="text-[11px] text-slate-500 leading-snug">{t.desc}</div>}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pending Tasks (System Generated To-Dos) */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+                    待处理系统任务
+                  </h3>
+                  <div className="flex space-x-2">
+                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium border border-red-200">1 阻塞项</span>
+                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium border border-slate-200">3 待确认</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {[
+                    { title: "线上发布被拦截", summary: "检测到 fact_order_detail 模型有 3 个未定义的新维度，导致下游视图发布阻塞。", action: "前往治理页修复", tone: "red" },
+                    { title: "命名域存在冲突疑似点", summary: "“总收入”指标在财务中心和运营中心存在两套计算口径，需要确认保留版本。", action: "启动口径对齐指令", tone: "amber" },
+                    { title: "异常波动诊断报告完成", summary: "昨日大促期间产生异常转化率跌幅，分析报告及初步归因已生成，请查阅。", action: "查看诊断结果", tone: "slate" },
+                  ].map((t, i) => (
+                    <div key={i} className={cn(
+                      "bg-white border rounded-xl p-4 flex flex-col justify-between transition-colors shadow-sm cursor-pointer",
+                      t.tone === 'red' ? "border-red-200 hover:border-red-300" :
+                      t.tone === 'amber' ? "border-amber-200 hover:border-amber-300" : "border-slate-200 hover:border-slate-300"
+                    )}>
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[13px] font-bold text-slate-800">{t.title}</span>
+                          {t.tone === 'red' && <AlertCircle className="w-4 h-4 text-red-500" />}
+                          {t.tone === 'amber' && <AlertCircle className="w-4 h-4 text-amber-500" />}
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-snug mb-3">{t.summary}</p>
+                      </div>
+                      <button className={cn(
+                        "self-start text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors border",
+                        t.tone === 'red' ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-100" : 
+                        t.tone === 'amber' ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100" : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100"
+                      )}>
+                        {t.action}
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
