@@ -525,46 +525,52 @@ export default function App() {
                 <TaskComposer layout="hero" onSubmit={handleSubmitCommand} disabled={isSimulating} />
               </motion.div>
 
-              {/* 3. Grid for Templates */}
+              {/* 2.5 Important Alert Banner */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
+                className="w-full max-w-[720px] mb-10"
+              >
+                <div className="flex items-center justify-between px-4 py-3 bg-red-50/80 border border-red-200/60 rounded-xl shadow-sm backdrop-blur">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center border border-red-200/50">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                    </div>
+                    <span className="text-[13px] font-[500] text-red-900 tracking-wide">当前有 1 个高优先级治理任务待处理</span>
+                  </div>
+                  <button 
+                    onClick={() => setIsInboxOpen(true)}
+                    className="flex items-center text-[13px] font-semibold text-red-600 hover:text-red-700 hover:underline px-2 py-1 transition-colors"
+                  >
+                    去查看
+                    <svg className="w-3.5 h-3.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* 3. Chips for Suggestion Templates */}
               <motion.div 
                 initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-                className="w-full max-w-[900px] flex flex-col gap-10 pb-20 mt-16 z-10"
+                className="w-full max-w-[720px] flex flex-col items-center gap-4 pb-20 z-10"
               >
-                {/* Recommended Templates */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-slate-900 flex items-center">
-                      <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
-                      推荐任务模板
-                    </h3>
-                    <button className="text-[12px] text-slate-500 hover:text-blue-600 font-medium flex items-center transition-colors">
-                      探索更多模板 
-                      <svg className="w-3.5 h-3.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-wrap justify-center gap-2.5">
+                  <span className="flex items-center text-[12px] text-slate-400 mr-1"><Sparkles className="w-3.5 h-3.5 mr-1.5" />可以试试问我：</span>
                   {[
-                    { title: "生成业务知识图谱", desc: "盘点实体、关系与核心链路", icon: <Share2 className="w-4 h-4 text-indigo-500" /> },
-                    { title: "对齐核心指标口径", desc: "识别定义冲突与数据口径差异", icon: <Wand2 className="w-4 h-4 text-amber-500" /> },
-                    { title: "诊断异常波动原因", desc: "定位关键波动因子与异常归因", icon: <LineChart className="w-4 h-4 text-emerald-500" /> }
+                    "分析昨日订单异常并给出归因",
+                    "对齐实收金额口径并指出冲突来源",
+                    "生成业务知识图谱草稿",
+                    "查看发布前阻塞项"
                   ].map((t, i) => (
                     <button 
                       key={i} 
-                      onClick={() => {
-                        handleSubmitCommand(t.title);
-                      }} 
-                      className="p-4 rounded-2xl bg-white border border-slate-200 transition-all text-left flex flex-col hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/50 group hover:-translate-y-1"
+                      onClick={() => handleSubmitCommand(t)} 
+                      className="px-3.5 py-1.5 rounded-full bg-white/50 hover:bg-white border border-slate-200/80 hover:border-slate-300 text-[13px] text-slate-600 hover:text-slate-900 transition-all shadow-sm backdrop-blur flex items-center"
                     >
-                      <div className="mb-4 p-2 rounded-xl w-fit bg-slate-50 group-hover:bg-blue-50 transition-colors shrink-0">
-                        {t.icon}
-                      </div>
-                      <div className="text-[14px] font-bold text-slate-800 mb-1.5 leading-tight">{t.title}</div>
-                      <div className="text-[12px] text-slate-500 leading-snug">{t.desc}</div>
+                      {t}
                     </button>
                   ))}
-                  </div>
                 </div>
-
               </motion.div>
               </div> {/* Close Content Container */}
               </motion.div>

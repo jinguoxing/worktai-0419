@@ -72,29 +72,48 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
 
   const MODE_CONFIG = {
     auto: {
-      title: '✨ 智能执行',
+      title: '系统自动判断',
       placeholder: '描述你想完成的任务，系统将自动拆解步骤并处理...',
-      btn: '开始处理任务', tip: '根据内容自动调度对应工具完成工作'
+      btn: '发送指令', tip: '根据内容自动选择最优工具或仅作解答'
     },
     expert: {
-      title: '制定计划',
+      title: '先制定执行计划',
       placeholder: '对于复杂任务，先起草详细的执行步骤供你确认...',
-      btn: '制定执行计划', tip: '需经过你确认计划后才会真实运行底层环境'
+      btn: '生成执行计划', tip: '需经过你确认计划后才会真实运行底层环境'
     },
     suggest: {
-      title: '提问咨询',
+      title: '仅作提问咨询',
       placeholder: '探讨探索思路、了解方法或询问业务知识...',
-      btn: '发送提问', tip: '纯问答模式，不会对底层数据和配置做任何改动'
+      btn: '发送提问', tip: '纯问答模式，不会调用相关工具或改动配置'
     }
   };
 
-  const ModeSelector = () => (
-    <div className="flex items-center space-x-1 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/50 text-[12px] font-medium text-slate-600 shrink-0">
-      <button onClick={() => setMode('auto')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'auto' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.auto.title}</button>
-      <button onClick={() => setMode('expert')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'expert' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.expert.title}</button>
-      <button onClick={() => setMode('suggest')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'suggest' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.suggest.title}</button>
-    </div>
-  );
+  const [showModes, setShowModes] = useState(false);
+
+  const ModeSelector = () => {
+    if (showModes) {
+      return (
+        <div className="flex items-center space-x-1 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/50 text-[12px] font-medium text-slate-600 shrink-0">
+          <button onClick={() => { setMode('auto'); setShowModes(false); }} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'auto' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>系统自动判断</button>
+          <button onClick={() => { setMode('expert'); setShowModes(false); }} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'expert' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>先制定计划</button>
+          <button onClick={() => { setMode('suggest'); setShowModes(false); }} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'suggest' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>仅作提问咨询</button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center text-[12px] text-slate-600 font-medium shrink-0">
+        <Sparkles className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
+        <span>处理方式：<span className="text-slate-800">{MODE_CONFIG[mode].title}</span></span>
+        <button 
+          onClick={() => setShowModes(true)} 
+          className="ml-2.5 text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+        >
+          更改
+        </button>
+      </div>
+    );
+  };
 
   if (layout === 'dock') {
     return (
@@ -170,7 +189,7 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
   // Hero layout
   const config = MODE_CONFIG[mode];
   return (
-    <div className="w-full max-w-[720px] mb-12 relative z-20 flex flex-col space-y-4">
+    <div className="w-full max-w-[720px] mb-6 relative z-20 flex flex-col space-y-4">
       <motion.div 
         layoutId="composer-box"
         className={cn(
