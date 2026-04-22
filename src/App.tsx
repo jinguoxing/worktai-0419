@@ -9,7 +9,7 @@ import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
 import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA, MOCK_KG_BLOCKS, MOCK_KG_TRACE } from './constants';
 import { Block, ExecutionTrace, CommandBlock, WorkBlock, ResultBlock } from './types';
-import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard, AlertCircle } from 'lucide-react';
+import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard, AlertCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 
@@ -517,41 +517,42 @@ export default function App() {
               {/* 3. Grid for Templates */}
               <motion.div 
                 initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-                className="w-full max-w-[1000px] flex flex-col gap-10 pb-20 z-10"
+                className="w-full max-w-[900px] flex flex-col gap-10 pb-20 mt-16 z-10"
               >
                 {/* Recommended Templates */}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center">
-                    推荐任务模板
-                  </h3>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-slate-900 flex items-center">
+                      <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
+                      推荐任务模板
+                    </h3>
+                    <button className="text-[12px] text-slate-500 hover:text-blue-600 font-medium flex items-center transition-colors">
+                      探索更多模板 
+                      <svg className="w-3.5 h-3.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
                     { title: "生成业务知识图谱", desc: "盘点实体、关系与核心链路", icon: <Share2 className="w-4 h-4 text-indigo-500" /> },
                     { title: "对齐核心指标口径", desc: "识别定义冲突与数据口径差异", icon: <Wand2 className="w-4 h-4 text-amber-500" /> },
-                    { title: "诊断异常波动原因", desc: "定位关键波动因子与异常归因", icon: <LineChart className="w-4 h-4 text-emerald-500" /> },
-                    { title: "更多业务模板", desc: "从团队场景库中选择", icon: <LayoutDashboard className="w-4 h-4 text-blue-500" />, isMore: true }
+                    { title: "诊断异常波动原因", desc: "定位关键波动因子与异常归因", icon: <LineChart className="w-4 h-4 text-emerald-500" /> }
                   ].map((t, i) => (
                     <button 
                       key={i} 
                       onClick={() => {
-                        if (!t.isMore) {
-                          handleSubmitCommand(t.title);
-                        }
+                        handleSubmitCommand(t.title);
                       }} 
-                      className={cn(
-                        "p-4 rounded-xl border transition-all text-left flex flex-col hover:border-blue-300", 
-                        t.isMore ? "bg-slate-50 border-slate-200 border-dashed hover:bg-slate-100 items-center justify-center text-center h-full" : "bg-white border-slate-200 hover:shadow-sm group hover:-translate-y-px"
-                      )}
+                      className="p-4 rounded-2xl bg-white border border-slate-200 transition-all text-left flex flex-col hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/50 group hover:-translate-y-1"
                     >
-                      <div className={cn("mb-3 p-1.5 rounded-lg w-fit transition-colors shrink-0", t.isMore ? "bg-white border border-slate-200 shadow-sm" : "bg-slate-50 group-hover:bg-blue-50/50")}>
+                      <div className="mb-4 p-2 rounded-xl w-fit bg-slate-50 group-hover:bg-blue-50 transition-colors shrink-0">
                         {t.icon}
                       </div>
-                      <div className={cn("text-[13px] font-semibold text-slate-800 mb-1 leading-tight", t.isMore && "text-slate-600")}>{t.title}</div>
-                      {!t.isMore && <div className="text-[11px] text-slate-500 leading-snug">{t.desc}</div>}
+                      <div className="text-[14px] font-bold text-slate-800 mb-1.5 leading-tight">{t.title}</div>
+                      <div className="text-[12px] text-slate-500 leading-snug">{t.desc}</div>
                     </button>
                   ))}
+                  </div>
                 </div>
-              </div>
 
               </motion.div>
               </div> {/* Close Content Container */}

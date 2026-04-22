@@ -59,19 +59,19 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
 
   const MODE_CONFIG = {
     auto: {
-      title: '✨ 智能模式',
-      placeholder: '交代你的目标，我将自动判断意图并为你选择最优工作流...',
-      btn: '发送指令', tip: '系统将自动判断对话内容，调度工具或仅作解答'
+      title: '✨ 智能执行',
+      placeholder: '描述你想完成的任务，系统将自动拆解步骤并处理...',
+      btn: '开始处理任务', tip: '根据内容自动调度对应工具完成工作'
     },
     expert: {
-      title: '专家协作',
-      placeholder: '请输入复杂任务目标，例如：先给我一版指标治理执行计划',
-      btn: '生成计划', tip: '需经过你确认计划后才会真实运行'
+      title: '制定计划',
+      placeholder: '对于复杂任务，先起草详细的执行步骤供你确认...',
+      btn: '制定执行计划', tip: '需经过你确认计划后才会真实运行底层环境'
     },
     suggest: {
-      title: '仅作问答',
-      placeholder: '请输入你想咨询的问题，例如：这个异常排查应该从哪里开始',
-      btn: '发送咨询', tip: '本次仅输出建议，不会调用真实工具'
+      title: '提问咨询',
+      placeholder: '探讨探索思路、了解方法或询问业务知识...',
+      btn: '发送提问', tip: '纯问答模式，不会对底层数据和配置做任何改动'
     }
   };
 
@@ -156,16 +156,16 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
   // Hero layout
   const config = MODE_CONFIG[mode];
   return (
-    <div className="w-full max-w-[800px] mb-12 relative z-20 flex flex-col space-y-4">
+    <div className="w-full max-w-[720px] mb-12 relative z-20 flex flex-col space-y-4">
       <motion.div 
         layoutId="composer-box"
         className={cn(
-          "bg-white border shadow-xl shadow-slate-200/40 rounded-2xl overflow-hidden focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all flex flex-col relative",
+          "bg-white border shadow-2xl shadow-slate-200/50 rounded-2xl overflow-hidden focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all flex flex-col relative",
           disabled ? "opacity-70 pointer-events-none border-slate-200" : "border-slate-200"
         )}
       >
         <AttachmentPreview />
-        <div className="flex p-4 pb-2">
+        <div className="flex px-4 pt-4 pb-0">
           <textarea 
             value={value}
             onChange={e => setValue(e.target.value)}
@@ -176,7 +176,7 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
               }
             }}
             placeholder={config.placeholder}
-            className="flex-1 bg-transparent border-0 text-[15px] text-slate-900 placeholder:text-slate-400 resize-none focus:ring-0 min-h-[80px] m-0 leading-relaxed font-sans outline-none disabled:bg-transparent"
+            className="flex-1 bg-transparent border-0 text-[16px] text-slate-900 placeholder:text-slate-400 resize-none focus:ring-0 min-h-[120px] m-0 leading-relaxed font-sans outline-none disabled:bg-transparent"
             disabled={disabled}
           />
         </div>
