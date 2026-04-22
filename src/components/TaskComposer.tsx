@@ -59,21 +59,29 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
 
   const MODE_CONFIG = {
     auto: {
-      title: '自动执行', sub: '直接帮我做',
-      placeholder: '请输入你要直接执行的任务，例如：分析昨日订单异常并给出归因',
-      btn: '开始执行', tip: '本次将自动拆解任务并调度数字员工执行'
+      title: '✨ 智能模式',
+      placeholder: '交代你的目标，我将自动判断意图并为你选择最优工作流...',
+      btn: '发送指令', tip: '系统将自动判断对话内容，调度工具或仅作解答'
     },
     expert: {
-      title: '专家协作', sub: '出计划等确认',
+      title: '专家协作',
       placeholder: '请输入复杂任务目标，例如：先给我一版指标治理执行计划',
-      btn: '生成计划', tip: '本次将先生成执行计划，等待你确认后再运行'
+      btn: '生成计划', tip: '需经过你确认计划后才会真实运行'
     },
     suggest: {
-      title: '仅给建议', sub: '给思路不运行',
-      placeholder: '请输入你想先咨询的问题，例如：这个异常排查应该从哪里开始',
-      btn: '获取建议', tip: '本次仅输出建议，不会调用真实工具'
+      title: '仅作问答',
+      placeholder: '请输入你想咨询的问题，例如：这个异常排查应该从哪里开始',
+      btn: '发送咨询', tip: '本次仅输出建议，不会调用真实工具'
     }
   };
+
+  const ModeSelector = () => (
+    <div className="flex items-center space-x-1 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/50 text-[12px] font-medium text-slate-600 shrink-0">
+      <button onClick={() => setMode('auto')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'auto' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.auto.title}</button>
+      <button onClick={() => setMode('expert')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'expert' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.expert.title}</button>
+      <button onClick={() => setMode('suggest')} className={cn("px-2.5 py-1 rounded-md transition-colors", mode === 'suggest' ? "bg-white text-slate-800 shadow-sm" : "hover:text-slate-800")}>{MODE_CONFIG.suggest.title}</button>
+    </div>
+  );
 
   if (layout === 'dock') {
     return (
@@ -127,16 +135,16 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
               </button>
             </div>
           </div>
-          <div className="flex items-center px-4 py-2 bg-slate-50/50 border-t border-slate-100 space-x-4 text-[11px] text-slate-500 font-medium">
-             <div className="flex items-center space-x-1 bg-slate-100 rounded p-0.5">
-                <button onClick={() => setMode('auto')} className={cn("px-2 py-1 rounded transition-colors", mode === 'auto' ? "bg-white text-slate-700 shadow-sm" : "hover:text-slate-700")}>自动执行</button>
-                <button onClick={() => setMode('expert')} className={cn("px-2 py-1 rounded transition-colors", mode === 'expert' ? "bg-white text-slate-700 shadow-sm" : "hover:text-slate-700")}>专家协作</button>
-                <button onClick={() => setMode('suggest')} className={cn("px-2 py-1 rounded transition-colors", mode === 'suggest' ? "bg-white text-slate-700 shadow-sm" : "hover:text-slate-700")}>仅给建议</button>
-             </div>
-             {disabled && (
-               <span className="flex items-center text-blue-600 animate-pulse">
+          <div className="flex items-center px-4 py-2 bg-slate-50/50 border-t border-slate-100 space-x-3 text-[11px] text-slate-500 font-medium overflow-x-auto no-scrollbar">
+             <ModeSelector />
+             {disabled ? (
+               <span className="flex items-center text-blue-600 animate-pulse whitespace-nowrap border-l border-slate-200 pl-3">
                  <Sparkles className="w-3 h-3 mr-1" />
                  任务指令执行中...
+               </span>
+             ) : (
+               <span className="hidden sm:inline-block border-l border-slate-200 pl-3 whitespace-nowrap">
+                 {MODE_CONFIG[mode].tip}
                </span>
              )}
           </div>
@@ -149,27 +157,6 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
   const config = MODE_CONFIG[mode];
   return (
     <div className="w-full max-w-[800px] mb-12 relative z-20 flex flex-col space-y-4">
-      <div className="flex gap-3 w-full">
-        {(Object.keys(MODE_CONFIG) as ExecMode[]).map((k) => {
-          const v = MODE_CONFIG[k];
-          return (
-            <button 
-              key={k}
-              onClick={() => setMode(k)}
-              className={cn(
-                "p-3 rounded-xl flex-1 text-left transition-all border flex flex-col",
-                mode === k 
-                  ? "border-blue-500 bg-blue-50/30 ring-1 ring-blue-500/20 shadow-sm" 
-                  : "border-slate-200 hover:border-blue-300 bg-white"
-              )}
-            >
-              <div className="font-semibold text-[13px] text-slate-800 tracking-wide">{v.title}</div>
-              <div className="text-[11px] text-slate-500 mt-1">{v.sub}</div>
-            </button>
-          )
-        })}
-      </div>
-
       <motion.div 
         layoutId="composer-box"
         className={cn(
@@ -194,11 +181,13 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
           />
         </div>
         <div className="flex items-center justify-between px-4 py-3 bg-slate-50/50 border-t border-slate-100 flex-wrap gap-3">
-          <div className="text-[11px] text-slate-500 flex items-center">
-             <Sparkles className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
-             {config.tip}
+          <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar">
+             <ModeSelector />
+             <span className="text-[11px] text-slate-400 hidden sm:inline-block border-l border-slate-200 pl-3 whitespace-nowrap">
+               {config.tip}
+             </span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             <input 
               type="file" 
               ref={fileInputRef} 
