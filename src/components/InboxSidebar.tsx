@@ -37,7 +37,7 @@ export function InboxSidebar({ isOpen, onClose }: Props) {
             <div className="h-14 flex items-center justify-between px-5 border-b border-slate-200 shrink-0 bg-white">
               <div className="flex items-center space-x-2 text-slate-800">
                 <Bell className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-semibold">系统待办</span>
+                <span className="text-sm font-semibold">待办通知</span>
                 <span className="flex items-center justify-center bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-2">1</span>
               </div>
               <button 

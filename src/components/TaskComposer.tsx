@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Paperclip, ArrowUp, Sparkles, FileText, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ExecMode } from '../types';
@@ -15,6 +15,19 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
   const [mode, setMode] = useState<ExecMode>('auto');
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      // Small delay to allow the layout animation to complete if switching modes
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+    };
+
+    window.addEventListener('focus-composer', handleFocus);
+    return () => window.removeEventListener('focus-composer', handleFocus);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -96,6 +109,7 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
           <AttachmentPreview />
           <div className="flex p-3 pb-1">
             <textarea 
+              ref={textareaRef}
               value={value}
               onChange={e => setValue(e.target.value)}
               onKeyDown={e => {
@@ -167,6 +181,7 @@ export function TaskComposer({ layout, onSubmit, disabled }: Props) {
         <AttachmentPreview />
         <div className="flex px-4 pt-4 pb-0">
           <textarea 
+            ref={textareaRef}
             value={value}
             onChange={e => setValue(e.target.value)}
             onKeyDown={e => {

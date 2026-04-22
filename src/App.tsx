@@ -118,7 +118,8 @@ export default function App() {
           let title = s.title;
           const firstCommand = newBlocks.find(b => b.type === 'command');
           if (firstCommand && s.title === '新建任务') {
-            title = (firstCommand as CommandBlock).content;
+            const cmdText = (firstCommand as CommandBlock).content;
+            title = cmdText.length > 15 ? cmdText.substring(0, 15) + '...' : cmdText;
           }
           return { ...s, blocks: newBlocks, title };
         }
@@ -132,18 +133,28 @@ export default function App() {
   };
 
   const handleNewTask = () => {
-    const newId = `session-${Date.now()}`;
-    const newSession: SessionData = {
-      id: newId,
-      title: '新建任务',
-      date: '刚刚',
-      blocks: [],
-      trace: null
-    };
-    setSessions(prev => [newSession, ...prev]);
-    setCurrentSessionId(newId);
+    const emptySession = sessions.find(s => s.blocks.length === 0);
+    if (emptySession) {
+      setCurrentSessionId(emptySession.id);
+    } else {
+      const newId = `session-${Date.now()}`;
+      const newSession: SessionData = {
+        id: newId,
+        title: '新建任务',
+        date: '刚刚',
+        blocks: [],
+        trace: null
+      };
+      setSessions(prev => [newSession, ...prev]);
+      setCurrentSessionId(newId);
+    }
     setActiveBlockId(undefined);
     setIsSidePanelOpen(false);
+
+    // Auto-focus the input box to make this button feel highly responsive even if already on the new task page.
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('focus-composer'));
+    }, 50);
   };
 
   const handleSubmitCommand = async (command: string, mode: ExecMode = 'auto', files: File[] = []) => {
