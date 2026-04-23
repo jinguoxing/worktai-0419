@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, History, Plus, Info, Bell } from 'lucide-react';
+import { Layout, History, Plus, Info, Bell, PlayCircle } from 'lucide-react';
 import { WorkspaceContextState } from '../types';
 
 interface Props {
@@ -8,9 +8,10 @@ interface Props {
   onNewTask: () => void;
   onToggleEnvironment: () => void;
   onToggleInbox?: () => void;
+  onToggleExecutionView?: () => void;
 }
 
-export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onToggleEnvironment, onToggleInbox }: Props) {
+export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onToggleEnvironment, onToggleInbox, onToggleExecutionView }: Props) {
   return (
     <header className="h-14 border-b border-slate-200 bg-white/80 backdrop-blur flex items-center justify-between px-4 sticky top-0 z-20 shrink-0">
       {/* Left: Brand & Context */}
@@ -44,6 +45,14 @@ export function WorkspaceHeader({ contextState, onToggleHistory, onNewTask, onTo
 
       {/* Right: Global Actions */}
       <div className="flex items-center space-x-2">
+        <button 
+          onClick={onToggleExecutionView}
+          className="flex items-center space-x-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 mr-2 border border-emerald-200"
+        >
+          <PlayCircle className="w-4 h-4" />
+          <span className="text-[12px] font-medium">看下个执行页 👇</span>
+        </button>
+
         <button 
           onClick={onToggleInbox}
           className="flex items-center space-x-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"

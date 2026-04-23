@@ -9,9 +9,12 @@ import { BlockStream } from './components/BlockStream';
 import { HistorySidebar, SessionInfo } from './components/HistorySidebar';
 import { MOCK_BLOCKS, MOCK_TRACE, MOCK_CHART_DATA, MOCK_KG_BLOCKS, MOCK_KG_TRACE } from './constants';
 import { Block, ExecutionTrace, CommandBlock, WorkBlock, ResultBlock } from './types';
-import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard, AlertCircle, Sparkles } from 'lucide-react';
+import { LineChart, Share2, Wand2, Paperclip, ArrowUp, LayoutDashboard, AlertCircle, Sparkles, PlayCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
+import { ExecutionPage } from './pages/ExecutionPage';
+import { ChartWorkExecutionPage } from './pages/ChartWorkExecutionPage';
+import { DRKNExecutionPage } from './pages/DRKNExecutionPage';
 
 const getTime = () => {
 
@@ -73,6 +76,7 @@ const INITIAL_SESSIONS: SessionData[] = [
 ];
 
 export default function App() {
+  const [currentRoute, setCurrentRoute] = useState<'home' | 'mrp-execution' | 'order-anomaly' | 'drkn-execution'>('home');
   const [sessions, setSessions] = useState<SessionData[]>(INITIAL_SESSIONS);
   const [currentSessionId, setCurrentSessionId] = useState<string>('session-new');
   const [activeBlockId, setActiveBlockId] = useState<string | undefined>(undefined);
@@ -438,14 +442,55 @@ export default function App() {
 
   const sessionList: SessionInfo[] = sessions.map(s => ({ id: s.id, title: s.title, date: s.date }));
 
+  if (currentRoute === 'mrp-execution') {
+    return <ExecutionPage onBack={() => setCurrentRoute('home')} />;
+  }
+
+  if (currentRoute === 'order-anomaly') {
+    return (
+      <div className="flex flex-col h-screen fixed inset-0">
+        <WorkspaceHeader 
+          contextState={contextState}
+          onToggleHistory={() => setIsHistoryOpen(!isHistoryOpen)} 
+          onToggleInbox={() => setIsInboxOpen(!isInboxOpen)}
+          onNewTask={handleNewTask}
+          onToggleEnvironment={() => setIsEnvironmentDrawerOpen(true)}
+          onToggleExecutionView={() => setCurrentRoute('mrp-execution')}
+        />
+        <div className="flex-1 overflow-hidden flex flex-col relative z-0">
+          <ChartWorkExecutionPage onBack={() => setCurrentRoute('home')} />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentRoute === 'drkn-execution') {
+    return (
+      <div className="flex flex-col h-screen fixed inset-0">
+        <WorkspaceHeader 
+          contextState={contextState}
+          onToggleHistory={() => setIsHistoryOpen(!isHistoryOpen)} 
+          onToggleInbox={() => setIsInboxOpen(!isInboxOpen)}
+          onNewTask={handleNewTask}
+          onToggleEnvironment={() => setIsEnvironmentDrawerOpen(true)}
+          onToggleExecutionView={() => setCurrentRoute('order-anomaly')}
+        />
+        <div className="flex-1 overflow-hidden flex flex-col relative z-0">
+          <DRKNExecutionPage onBack={() => setCurrentRoute('home')} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-blue-200">
+      <div className="flex flex-col h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-blue-200">
       <WorkspaceHeader 
         contextState={contextState}
         onToggleHistory={() => setIsHistoryOpen(!isHistoryOpen)} 
         onToggleInbox={() => setIsInboxOpen(!isInboxOpen)}
         onNewTask={handleNewTask}
         onToggleEnvironment={() => setIsEnvironmentDrawerOpen(true)}
+        onToggleExecutionView={() => setCurrentRoute('drkn-execution')}
       />
       
       <HistorySidebar 
@@ -530,7 +575,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
-                className="w-full max-w-[720px] mb-10"
+                className="w-full max-w-[720px] mb-4"
               >
                 <div className="flex items-center justify-between px-4 py-3 bg-red-50/80 border border-red-200/60 rounded-xl shadow-sm backdrop-blur">
                   <div className="flex items-center space-x-2.5">
@@ -545,6 +590,71 @@ export default function App() {
                   >
                     去查看
                     <svg className="w-3.5 h-3.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* 2.6 Execution Demo Banner */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.18, ease: "easeOut" }}
+                className="w-full max-w-[720px] mb-10 flex flex-col gap-3"
+              >
+                <div 
+                  onClick={() => setCurrentRoute('order-anomaly')}
+                  className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/60 rounded-xl shadow-sm backdrop-blur cursor-pointer hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center border border-blue-700/50 shadow-sm group-hover:scale-105 transition-transform">
+                      <LayoutDashboard className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[14px] font-[700] text-blue-900 tracking-wide leading-tight">体验全新工作台：沉浸式多智能体执行页</span>
+                      <span className="text-[12px] text-blue-600/80 font-medium mt-0.5">以 "昨日订单异常归因" 场景进行模拟推演</span>
+                    </div>
+                  </div>
+                  <button className="flex items-center justify-center text-[13px] font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg shadow-sm transition-colors">
+                    进入体验
+                    <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                </div>
+
+                <div 
+                  onClick={() => setCurrentRoute('drkn-execution')}
+                  className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50/90 to-violet-50/90 border border-indigo-200/60 rounded-xl shadow-sm backdrop-blur cursor-pointer hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center border border-indigo-700/50 shadow-sm group-hover:scale-105 transition-transform">
+                      <LayoutDashboard className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[14px] font-[700] text-indigo-900 tracking-wide leading-tight">体验全景执行页(3)：数据语义治理平台 (DRKN)</span>
+                      <span className="text-[12px] text-indigo-700/80 font-medium mt-0.5">以 "订单履约与异常归因场景包构建 (DRKN)" 进行推演</span>
+                    </div>
+                  </div>
+                  <button className="flex items-center justify-center text-[13px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-lg shadow-sm transition-colors">
+                    进入体验
+                    <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                </div>
+
+                <div 
+                  onClick={() => setCurrentRoute('mrp-execution')}
+                  className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/90 border border-emerald-200/60 rounded-xl shadow-sm backdrop-blur cursor-pointer hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center border border-emerald-700/50 shadow-sm group-hover:scale-105 transition-transform">
+                      <LayoutDashboard className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[14px] font-[700] text-emerald-900 tracking-wide leading-tight">体验沉浸执行页(1)：数据语义治理平台</span>
+                      <span className="text-[12px] text-emerald-700/80 font-medium mt-0.5">以 "推演MRP原材料需求缺口" 场景进行模拟推演</span>
+                    </div>
+                  </div>
+                  <button className="flex items-center justify-center text-[13px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded-lg shadow-sm transition-colors">
+                    进入体验
+                    <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
                   </button>
                 </div>
               </motion.div>
